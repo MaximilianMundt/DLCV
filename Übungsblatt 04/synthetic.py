@@ -6,12 +6,14 @@ import torch as th
 import numpy as np
 from sklearn import datasets
 
-class CircelsDataset(th.utils.data.IterableDataset):
 
-    def __init__(self, start : int = 0, end : int = 10000) -> None:
+class CircelsDataset(th.utils.data.IterableDataset):
+    def __init__(self, start: int = 0, end: int = 10000) -> None:
         super().__init__()
-        n_samples = end-start
-        points, labels = datasets.make_circles(n_samples=n_samples, factor=0.5, noise=0.05)
+        n_samples = end - start
+        points, labels = datasets.make_circles(
+            n_samples=n_samples, factor=0.5, noise=0.05
+        )
         self.start = start
         self.end = end
         self.points = points.astype(np.float32)
@@ -24,7 +26,9 @@ class CircelsDataset(th.utils.data.IterableDataset):
             iter_end = self.end
         else:  # in a worker process
             # split workload
-            per_worker = int(math.ceil((self.end - self.start) / float(worker_info.num_workers)))
+            per_worker = int(
+                math.ceil((self.end - self.start) / float(worker_info.num_workers))
+            )
             worker_id = worker_info.id
             iter_start = self.start + worker_id * per_worker
             iter_end = min(iter_start + per_worker, self.end)
