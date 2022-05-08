@@ -1,8 +1,8 @@
-from typing import Type, List, Tuple
-import sklearn
-
+from statistics import mode
+from tkinter.tix import InputOnly
 import torch
 import numpy as np
+from typing import Type, List, Tuple
 from sklearn import datasets
 
 
@@ -24,11 +24,20 @@ class BinaryClassifierMLP(torch.nn.Module):
         super().__init__()
 
         self.layers = torch.nn.ModuleList()
-        pass  # Ersetzen Sie pass durch Ihren code
+        current_inputs = n_inputs
+
+        for i in range(len(layers)):
+            self.layers.append(torch.nn.Linear(current_inputs, layers[i]))
+            self.layers.append(activation_fn())
+            current_inputs = layers[i]
+
+        self.layers.append(torch.nn.Linear(layers[-1], 1))
+        self.layers.append(torch.nn.Sigmoid())
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:
         for layer in self.layers:
             x = layer(x)
+
         return x.squeeze()
 
 
@@ -39,9 +48,21 @@ def train_binary(
     optim: torch.optim.Optimizer,
 ) -> List:
     loss_curve = []
+
     for epoch in range(epochs):
-        for batch_idx, (input_data, gt_label) in enumerate(dataloader):
-            pass  # Ersetzen Sie pass durch Ihren code
+        for batch_number, (inputs, labels) in enumerate(dataloader):
+            optim.zero_grad()
+
+            predictions = model(inputs.float())
+            loss_fn = torch.nn.BCELoss()
+            loss = loss_fn(predictions, labels.float())
+            loss.backward()
+
+            optim.step()
+            loss_curve.append(loss.item())
+
+    print("Finished Training")
+
     return loss_curve
 
 
@@ -51,6 +72,8 @@ def evaluate(
     model: torch.nn.Module,
 ) -> float:
     accuracy = 0.0
+
     for step, (input_data, gt_label) in enumerate(dataloader):
         pass  # Ersetzen Sie pass durch Ihren code
+
     return accuracy
