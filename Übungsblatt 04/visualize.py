@@ -40,7 +40,7 @@ def show_decision_boundary(
 
     xx, yy = th.meshgrid(
         [th.linspace(-2.0, 2.0, steps=100), th.linspace(-2.0, 2.0, steps=100)],
-        indexing=None,
+        indexing="xy",
     )
     xy = th.stack([xx, yy], dim=-1).reshape(-1, 2)
 

@@ -1,5 +1,6 @@
 from statistics import mode
 from tkinter.tix import InputOnly
+from xmlrpc.client import Boolean
 import torch
 import numpy as np
 from typing import Type, List, Tuple
@@ -8,9 +9,11 @@ from sklearn import datasets
 
 class CircelsDataset:
     def __init__(self, n_samples: int = 10000) -> None:
-        self.points, self.labels = datasets.make_circles(
-            n_samples, factor=0.5, noise=0.05
+        points, labels = datasets.make_circles(
+            n_samples=n_samples, factor=0.5, noise=0.05
         )
+        self.points = points.astype(np.float32)
+        self.labels = labels.astype(np.float32)
 
     def __len__(self) -> int:
         return len(self.points)
@@ -46,20 +49,27 @@ def train_binary(
     dataloader: torch.utils.data.DataLoader,
     model: torch.nn.Module,
     optim: torch.optim.Optimizer,
+    verbose: bool = True,
 ) -> List:
     loss_curve = []
+    current_loss = 0
 
-    for epoch in range(epochs):
+    for epoch in range(1, epochs + 1):
         for batch_number, (inputs, labels) in enumerate(dataloader):
             optim.zero_grad()
 
-            predictions = model(inputs.float())
+            predictions = model(inputs)
             loss_fn = torch.nn.BCELoss()
-            loss = loss_fn(predictions, labels.float())
+            loss = loss_fn(predictions, labels)
             loss.backward()
+            current_loss = loss.item()
 
             optim.step()
-            loss_curve.append(loss.item())
+
+        loss_curve.append(current_loss)
+
+        if verbose and (epoch % 5 == 0 or epoch == 1):
+            print(f"Epoch {epoch}/{epochs}: loss =", current_loss)
 
     print("Finished Training")
 
@@ -71,9 +81,15 @@ def evaluate(
     dataloader: torch.utils.data.DataLoader,
     model: torch.nn.Module,
 ) -> float:
-    accuracy = 0.0
+    x = 0
 
-    for step, (input_data, gt_label) in enumerate(dataloader):
-        pass  # Ersetzen Sie pass durch Ihren code
+    for step, (inputs, labels) in enumerate(dataloader):
+        for input, label in zip(inputs, labels):
+            prediction = model(input)
+            true_false_prediction = torch.round(prediction)
+
+            x += int(true_false_prediction == label)
+
+    accuracy = 100 / len(dataloader.dataset) * x
 
     return accuracy
