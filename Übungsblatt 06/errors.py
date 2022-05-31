@@ -1,4 +1,5 @@
 from dis import show_code
+from pyexpat import model
 from tkinter.tix import Tree
 from typing import Type, List, Tuple
 from sklearn.utils import shuffle
@@ -94,21 +95,21 @@ if __name__ == "__main__":
     Aufgabenteil 1
     """
     dataset = CircelsDataset()
-    # hier war shuffle=False, das sollte man so aber ja nicht machen
+    # hier war shuffle=False, das sollte man so aber ja nicht machen (oder?)
     dataloader = torch.utils.data.DataLoader(dataset, 32, shuffle=True)
     mlp1 = BinaryClassifierMLP(2, [4, 4], torch.nn.Tanh)
     optim = torch.optim.Adam(mlp1.parameters(), lr=0.01)
 
-    # print("Accuarcy before training", evaluate(dataloader, mlp1))
-    # loss_curve = train_binary(10, dataloader, mlp1, optim)
-    # print("Accuarcy after training", evaluate(dataloader, mlp1))
-    # show_loss_curve(loss_curve)
-    # show_decision_boundary(mlp1, dataset.points, dataset.labels)
+    print("Accuarcy before training", evaluate(dataloader, mlp1))
+    loss_curve = train_binary(10, dataloader, mlp1, optim)
+    print("Accuarcy after training", evaluate(dataloader, mlp1))
+    show_loss_curve(loss_curve)
+    show_decision_boundary(mlp1, dataset.points, dataset.labels)
 
     """
     Aufgabenteil 2
     """
-    mlp2 = BinaryClassifierMLP(2, [4] * 2, torch.nn.ReLU)
+    mlp2 = BinaryClassifierMLP(2, [4] * 18, torch.nn.Sigmoid)
     optim = torch.optim.Adam(mlp2.parameters(), lr=0.01)
 
     print("Accuarcy before training", evaluate(dataloader, mlp2))
@@ -119,5 +120,4 @@ if __name__ == "__main__":
 
     for layer in mlp2.layers:
         if isinstance(layer, torch.nn.Linear):
-            print(layer.weight)
-
+            print(layer.weight.grad)
