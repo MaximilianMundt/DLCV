@@ -3,6 +3,7 @@ import torch.nn as nn
 import torchsummary
 from torchvision import datasets
 from torchvision import transforms
+from datetime import datetime
 
 
 class CIFAR10Classifier(nn.Module):
@@ -44,7 +45,7 @@ class CIFAR10Classifier(nn.Module):
         torchsummary.summary(self, (3, 32, 32))
 
 
-def train(model, dataloader, epochs=10):
+def train(model, dataloader, epochs=10, save=False):
     model.train()
     optimizer = torch.optim.Adam(model.parameters())
     cross_entropy = torch.nn.CrossEntropyLoss()
@@ -54,7 +55,7 @@ def train(model, dataloader, epochs=10):
         running_loss = []
         print(f"Beginning epoch {epoch} / {epochs}")
 
-        for batch_num, (images, labels) in enumerate(dataloader, 1):
+        for _, (images, labels) in enumerate(dataloader, 1):
             optimizer.zero_grad()
             outputs = model(images)
             loss = cross_entropy(outputs, labels)
@@ -64,6 +65,10 @@ def train(model, dataloader, epochs=10):
 
         epoch_loss = torch.Tensor(running_loss).mean().item()
         loss_history.append(epoch_loss)
+
+    if save:
+        date = datetime.strftime("%y%m%d_%H%M")
+        torch.save(model, f"model_{date}.pt")
 
     return loss_history
 
