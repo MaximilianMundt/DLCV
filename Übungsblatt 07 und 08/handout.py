@@ -86,7 +86,7 @@ def evaluate(model, dataloader):
         total += images.size(0)
         correct += (predicted_labels == labels).sum().item()
 
-    return round(correct / total, 4)
+    return round(100 * correct / total, 2)
 
 
 def create_augmented_dataset(train):
