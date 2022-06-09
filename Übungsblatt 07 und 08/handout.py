@@ -12,18 +12,21 @@ class CIFAR10Classifier(nn.Module):
 
         self.convs = nn.Sequential(
             *self._create_conv_block(3, 32),
+            *self._create_conv_block(32, 32),
+            nn.MaxPool2d(kernel_size=2, stride=1),
             *self._create_conv_block(32, 64),
-            *self._create_conv_block(64, 128),
+            *self._create_conv_block(64, 64),
+            nn.MaxPool2d(kernel_size=2, stride=1),
             nn.AdaptiveAvgPool2d((7, 7)),
         )
         self.fully_connected = nn.Sequential(
-            nn.Linear(128 * 7 * 7, 256),
+            nn.Linear(64 * 7 * 7, 512),
             nn.ReLU(),
             nn.Dropout(0.5),
-            nn.Linear(256, 128),
+            nn.Linear(512, 256),
             nn.ReLU(),
             nn.Dropout(0.5),
-            nn.Linear(128, 10),
+            nn.Linear(256, 10),
         )
 
     def _create_conv_block(self, in_channels, out_channels):
@@ -31,7 +34,6 @@ class CIFAR10Classifier(nn.Module):
             nn.Conv2d(in_channels, out_channels, kernel_size=3, padding=1),
             nn.BatchNorm2d(out_channels),
             nn.ReLU(),
-            nn.MaxPool2d(kernel_size=2, stride=1),
         ]
 
     def forward(self, x):
@@ -67,7 +69,7 @@ def train(model, dataloader, epochs=10, save=False):
         loss_history.append(epoch_loss)
 
     if save:
-        date = datetime.strftime("%y%m%d_%H%M")
+        date = datetime.now().strftime("%y%m%d_%H%M")
         torch.save(model, f"model_{date}.pt")
 
     return loss_history
