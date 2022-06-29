@@ -1,10 +1,5 @@
-from audioop import add
-from re import A
-from sklearn.semi_supervised import LabelSpreading
-from sklearn.utils import shuffle
 import torch
 import torch.nn as nn
-import torchsummary
 import matplotlib.pyplot as plt
 from torchvision import datasets, transforms
 from torch.utils.data import DataLoader
@@ -196,7 +191,7 @@ def train_autoencoder(n_epochs, model, optimizer, trainloader, save=False):
 
     if save:
         date = datetime.now().strftime("%y%m%d_%H%M")
-        torch.save(model, f"autoencoder_{date}.pt")
+        torch.save(model, f"model_{date}.pt")
 
     return epoch_history
 
@@ -221,10 +216,10 @@ def visualize_images(noisy_inputs, reconstructed_images, original_images, labels
     ):
         axs[i][0].imshow(transform_image(noisy_input))
         axs[i][0].set_title("Noisy Input")
-        axs[i][1].imshow(transform_image(reconstructed_image))
-        axs[i][1].set_title("Reconstructed")
-        axs[i][2].imshow(transform_image(original_image))
-        axs[i][2].set_title(f"Original ({CLASSES[label]})")
+        axs[i][1].imshow(transform_image(original_image))
+        axs[i][1].set_title(f"Original ({CLASSES[label]})")
+        axs[i][2].imshow(transform_image(reconstructed_image))
+        axs[i][2].set_title("Reconstructed")
 
     for axx in axs:
         for axy in axx:
@@ -232,27 +227,3 @@ def visualize_images(noisy_inputs, reconstructed_images, original_images, labels
 
     plt.tight_layout()
     plt.show()
-
-
-if __name__ == "__main__":
-    traindata = datasets.FashionMNIST(
-        "./data", train=True, transform=transforms.ToTensor(), download=True
-    )
-    trainloader = DataLoader(traindata, batch_size=64, shuffle=True, num_workers=6)
-
-    """
-    Autoencoder mit Upsampling Decoder 
-    """
-    # model = AutoEncoder(Encoder(nn.LeakyReLU), DecoderUpsample(nn.ReLU)).to(DEVICE)
-    model = torch.load("autoencoder_220624_2108.pt")
-
-    # optimizer = torch.optim.Adam(model.parameters())
-
-    # loss_curve = train_autoencoder(30, model, optimizer, trainloader, save=True)
-    # plt.plot(loss_curve)
-    # plt.show()
-
-    testdata = datasets.FashionMNIST("./data", train=True, transform=transforms.ToTensor())
-    testloader = torch.utils.data.DataLoader(traindata, batch_size=5, shuffle=True)
-
-    evaluate_autoencoder(model, testloader)
